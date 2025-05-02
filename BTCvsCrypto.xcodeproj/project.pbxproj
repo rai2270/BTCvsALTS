@@ -9,12 +9,14 @@
 /* Begin PBXBuildFile section */
 		31B4727D2DB0844B003DF390 /* Sunset.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 31B4727C2DB0844B003DF390 /* Sunset.mp3 */; };
 		31B4727F2DB08AFC003DF390 /* FeelsGood2B.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 31B4727E2DB08AFC003DF390 /* FeelsGood2B.mp3 */; };
+		31CB48D22DC46CD90013755E /* btcVibing.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 31CB48D12DC46CD90013755E /* btcVibing.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		31B4725A2DB07E1C003DF390 /* BTCvsCrypto.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BTCvsCrypto.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		31B4727C2DB0844B003DF390 /* Sunset.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sunset.mp3; sourceTree = "<group>"; };
 		31B4727E2DB08AFC003DF390 /* FeelsGood2B.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = FeelsGood2B.mp3; sourceTree = "<group>"; };
+		31CB48D12DC46CD90013755E /* btcVibing.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = btcVibing.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -43,6 +45,7 @@
 				31B4725B2DB07E1C003DF390 /* Products */,
 				31B4727C2DB0844B003DF390 /* Sunset.mp3 */,
 				31B4727E2DB08AFC003DF390 /* FeelsGood2B.mp3 */,
+				31CB48D12DC46CD90013755E /* btcVibing.mp3 */,
 			);
 			sourceTree = "<group>";
 		};
@@ -118,6 +121,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				31CB48D22DC46CD90013755E /* btcVibing.mp3 in Resources */,
 				31B4727F2DB08AFC003DF390 /* FeelsGood2B.mp3 in Resources */,
 				31B4727D2DB0844B003DF390 /* Sunset.mp3 in Resources */,
 			);

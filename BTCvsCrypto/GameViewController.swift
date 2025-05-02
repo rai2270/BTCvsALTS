@@ -3,7 +3,7 @@ import SpriteKit
 import UniformTypeIdentifiers
 
 // Bundled MP3s (omit “.mp3” extension)
-private let bundledSongs = ["Sunset", "FeelsGood2B"]
+private let bundledSongs = ["Sunset", "FeelsGood2B", "btcVibing"]
 
 class GameViewController: UIViewController,
                           UIDocumentPickerDelegate {
