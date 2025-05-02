@@ -6,7 +6,8 @@ import UniformTypeIdentifiers
 private let bundledSongs = ["Sunset", "FeelsGood2B", "btcVibing"]
 
 class GameViewController: UIViewController,
-                          UIDocumentPickerDelegate {
+                          UIDocumentPickerDelegate,
+                          GameSceneDelegate {
 
     private let selectButton   = UIButton(type: .system)
     private let playPauseButton = UIButton(type: .system)
@@ -95,6 +96,7 @@ class GameViewController: UIViewController,
         let sceneSize = skView.bounds.size
         let scene = GameScene(size: sceneSize)
         scene.scaleMode = .resizeFill
+        scene.gameDelegate = self
         skView.presentScene(scene)
     }
 
@@ -155,5 +157,34 @@ class GameViewController: UIViewController,
         } catch {
             print("Audio play error:", error)
         }
+    }
+    
+    // MARK: - GameSceneDelegate
+    
+    func gameDidEnd(withScore score: Int) {
+        // Disable buttons when game ends
+        selectButton.isEnabled = false
+        playPauseButton.isEnabled = false
+        
+        // Dim buttons to indicate they're disabled
+        selectButton.alpha = 0.5
+        playPauseButton.alpha = 0.5
+    }
+    
+    func gameDidRestart() {
+        // Re-enable buttons when game restarts
+        selectButton.isEnabled = true
+        playPauseButton.isEnabled = true
+        
+        // Restore button appearance
+        selectButton.alpha = 1.0
+        playPauseButton.alpha = 1.0
+        
+        // Reset play/pause button to show "Play"
+        playPauseButton.setTitle("Play", for: .normal)
+        playPauseButton.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.9)
+        
+        // User has to select song again
+        selectedURL = nil
     }
 }
