@@ -13,16 +13,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		31B4725A2DB07E1C003DF390 /* BTCvsCrypto.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BTCvsCrypto.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		31B4725A2DB07E1C003DF390 /* BTCvsALTS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BTCvsALTS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		31B4727C2DB0844B003DF390 /* Sunset.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Sunset.mp3; sourceTree = "<group>"; };
 		31B4727E2DB08AFC003DF390 /* FeelsGood2B.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = FeelsGood2B.mp3; sourceTree = "<group>"; };
 		31CB48D12DC46CD90013755E /* btcVibing.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = btcVibing.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		31B4725C2DB07E1C003DF390 /* BTCvsCrypto */ = {
+		31B4725C2DB07E1C003DF390 /* BTCvsALTS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = BTCvsCrypto;
+			path = BTCvsALTS;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -41,7 +41,7 @@
 		31B472512DB07E1C003DF390 = {
 			isa = PBXGroup;
 			children = (
-				31B4725C2DB07E1C003DF390 /* BTCvsCrypto */,
+				31B4725C2DB07E1C003DF390 /* BTCvsALTS */,
 				31B4725B2DB07E1C003DF390 /* Products */,
 				31B4727C2DB0844B003DF390 /* Sunset.mp3 */,
 				31B4727E2DB08AFC003DF390 /* FeelsGood2B.mp3 */,
@@ -52,7 +52,7 @@
 		31B4725B2DB07E1C003DF390 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				31B4725A2DB07E1C003DF390 /* BTCvsCrypto.app */,
+				31B4725A2DB07E1C003DF390 /* BTCvsALTS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -60,9 +60,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		31B472592DB07E1C003DF390 /* BTCvsCrypto */ = {
+		31B472592DB07E1C003DF390 /* BTCvsALTS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 31B472712DB07E1D003DF390 /* Build configuration list for PBXNativeTarget "BTCvsCrypto" */;
+			buildConfigurationList = 31B472712DB07E1D003DF390 /* Build configuration list for PBXNativeTarget "BTCvsALTS" */;
 			buildPhases = (
 				31B472562DB07E1C003DF390 /* Sources */,
 				31B472572DB07E1C003DF390 /* Frameworks */,
@@ -73,13 +73,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				31B4725C2DB07E1C003DF390 /* BTCvsCrypto */,
+				31B4725C2DB07E1C003DF390 /* BTCvsALTS */,
 			);
-			name = BTCvsCrypto;
+			name = BTCvsALTS;
 			packageProductDependencies = (
 			);
 			productName = BTCvsCrypto;
-			productReference = 31B4725A2DB07E1C003DF390 /* BTCvsCrypto.app */;
+			productReference = 31B4725A2DB07E1C003DF390 /* BTCvsALTS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -97,7 +97,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 31B472552DB07E1C003DF390 /* Build configuration list for PBXProject "BTCvsCrypto" */;
+			buildConfigurationList = 31B472552DB07E1C003DF390 /* Build configuration list for PBXProject "BTCvsALTS" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -111,7 +111,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				31B472592DB07E1C003DF390 /* BTCvsCrypto */,
+				31B472592DB07E1C003DF390 /* BTCvsALTS */,
 			);
 		};
 /* End PBXProject section */
@@ -328,7 +328,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		31B472552DB07E1C003DF390 /* Build configuration list for PBXProject "BTCvsCrypto" */ = {
+		31B472552DB07E1C003DF390 /* Build configuration list for PBXProject "BTCvsALTS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				31B4726F2DB07E1D003DF390 /* Debug */,
@@ -337,7 +337,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		31B472712DB07E1D003DF390 /* Build configuration list for PBXNativeTarget "BTCvsCrypto" */ = {
+		31B472712DB07E1D003DF390 /* Build configuration list for PBXNativeTarget "BTCvsALTS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				31B472722DB07E1D003DF390 /* Debug */,
