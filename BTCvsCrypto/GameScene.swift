@@ -1,5 +1,11 @@
 import SpriteKit
 
+/// Communicates game state changes to its delegate
+protocol GameSceneDelegate: AnyObject {
+    func gameDidEnd(withScore score: Int)
+    func gameDidRestart()
+}
+
 private struct PCat {
     static let cube:   UInt32 = 1 << 0
     static let bullet: UInt32 = 1 << 1
@@ -9,6 +15,8 @@ class GameScene: SKScene,
                  AudioManagerDelegate,
                  SpectrumNodeDelegate,
                  SKPhysicsContactDelegate {
+    
+    weak var gameDelegate: GameSceneDelegate?
     
     // Game states
     enum GameState {
@@ -403,6 +411,9 @@ class GameScene: SKScene,
         self.isPaused = false // Ensure the scene is unpaused to show animations
         spectrum.isPaused = true
         AudioManager.shared.stop() // Stop the music
+        
+        // Notify delegate that game has ended
+        gameDelegate?.gameDidEnd(withScore: score)
     }
     
     /// Restarts the game
@@ -439,6 +450,9 @@ class GameScene: SKScene,
         
         // Note: We don't auto-restart music here
         // The player will need to select a song again using the UI
+        
+        // Notify delegate that game has restarted
+        gameDelegate?.gameDidRestart()
     }
     
     /// Check if a crypto coin has reached the bottom, lose a life if so
