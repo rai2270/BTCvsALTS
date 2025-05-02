@@ -356,7 +356,7 @@ class GameScene: SKScene,
         
         // Bitcoin crashed text
         let btcCrashedText = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
-        btcCrashedText.text = "Bitcoin Crashed!"
+        btcCrashedText.text = "Bitcoin Defeated By ALTS!"
         btcCrashedText.fontSize = 32
         btcCrashedText.fontColor = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0) // Bitcoin orange
         btcCrashedText.position = CGPoint(x: size.width/2, y: size.height/2 + 50)

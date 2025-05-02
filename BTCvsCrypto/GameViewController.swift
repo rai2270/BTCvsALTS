@@ -36,7 +36,7 @@ class GameViewController: UIViewController,
     // MARK: – UI layout -------------------------------------------------
     private func setupTopControls() {
         let titleLabel = UILabel()
-        titleLabel.text = "BTCvsCrypto"
+        titleLabel.text = "BTCvsALTS"
         titleLabel.font = .boldSystemFont(ofSize: 32)
         titleLabel.textColor = .white
         titleLabel.translatesAutoresizingMaskIntoConstraints = false

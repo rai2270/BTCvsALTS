@@ -1,6 +1,6 @@
-# BTCvsCrypto
+# BTCvsALTS
 
-An iOS game where Bitcoin battles against altcoins in a music-driven arcade experience. The game uses real-time audio spectrum analysis to spawn crypto coins that fall from the top of the screen while you control a Bitcoin spaceship to shoot them down.
+An iOS game where Bitcoin battles against altcoins in a music-driven arcade experience. The game uses real-time audio spectrum analysis to spawn altcoin symbols that fall from the top of the screen while you control a Bitcoin spaceship to shoot them down.
 
 ## Features
 
