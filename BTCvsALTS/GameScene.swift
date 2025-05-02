@@ -25,11 +25,14 @@ class GameScene: SKScene,
     }
     // MARK: – Game state
     private var score: Int = 0
-    private var lives: Int = 3
+    private var lives: Int = 30
     private var gameState: GameState = .playing
     private var scoreLabel: SKLabelNode!
     private var livesLabel: SKLabelNode!
     private var gameOverNode: SKNode!
+    
+    // Track last spawned altcoin type to ensure variety
+    private var lastAltcoinType: Int = -1
 
     private var spectrum: SpectrumNode!
     private var ship:     SKNode! // Changed from SKSpriteNode to SKNode
@@ -87,7 +90,7 @@ class GameScene: SKScene,
         livesLabel.verticalAlignmentMode = .top
         livesLabel.position = CGPoint(x: size.width - 20, y: size.height - 20)
         livesLabel.zPosition = 100
-        livesLabel.text = "Lives: 3"
+        livesLabel.text = "Lives: 30"
         
         // Add background for lives
         let livesBg = SKShapeNode(rectOf: CGSize(width: 120, height: 36), cornerRadius: 8)
@@ -113,10 +116,22 @@ class GameScene: SKScene,
                        forBar barIndex: Int) {
         // prevent multiple cubes on the same bar until this one starts falling
         guard !pendingBars.contains(barIndex) else { return }
+        
+        // Limit initial wave of coins when a song starts
+        if score < 5 && pendingBars.count > 2 {
+            // Only spawn if we randomly decide to (30% chance when score is low)
+            guard Int.random(in: 1...10) <= 3 else { return }
+        }
+        
         pendingBars.insert(barIndex)
         
-        // Get index and color for this altcoin
-        let coinIndex = barIndex % 5
+        // Get a different altcoin type than the last one that spawned
+        var coinIndex = Int.random(in: 0...4) // Random altcoin type
+        while coinIndex == lastAltcoinType && lastAltcoinType != -1 {
+            coinIndex = Int.random(in: 0...4) // Keep trying until we get a different type
+        }
+        lastAltcoinType = coinIndex // Remember this type
+        
         let coinColor = getCryptoColor(forIndex: coinIndex)
         let coinSize: CGFloat = 20
         
@@ -139,6 +154,8 @@ class GameScene: SKScene,
             cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
             cube.lineWidth = 1.5
             
+            // Simple falling motion (no special pattern)
+            
         case 1: // DOGE (circle with D)
             cube.path = CGPath(ellipseIn: CGRect(x: -coinSize/2, y: -coinSize/2, width: coinSize, height: coinSize), transform: nil)
             cube.fillColor = coinColor
@@ -152,6 +169,8 @@ class GameScene: SKScene,
             label.verticalAlignmentMode = .center
             label.horizontalAlignmentMode = .center
             cube.addChild(label)
+            
+            // Simple falling motion (no special pattern)
             
         case 2: // LTC (silver hexagon)
             let path = UIBezierPath()
@@ -170,6 +189,8 @@ class GameScene: SKScene,
             cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
             cube.lineWidth = 1.5
             
+            // Simple falling motion (no special pattern)
+            
         case 3: // XRP (3D triangle)
             let path = UIBezierPath()
             path.move(to: CGPoint(x: 0, y: coinSize/2))
@@ -180,6 +201,8 @@ class GameScene: SKScene,
             cube.fillColor = coinColor
             cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
             cube.lineWidth = 1.5
+            
+            // Simple falling motion (no special pattern)
             
         default: // Generic coin (octagon)
             let path = UIBezierPath()
@@ -197,6 +220,8 @@ class GameScene: SKScene,
             cube.fillColor = coinColor
             cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
             cube.lineWidth = 1.5
+            
+            // Simple falling motion (no special pattern)
         }
         
         // Add pulsating effect
@@ -215,6 +240,7 @@ class GameScene: SKScene,
         body.collisionBitMask = 0
         cube.physicsBody = body
         addChild(cube)
+        
         // wait, then enable gravity so it drops
         let delay = SKAction.wait(forDuration: 0.5)
         let activatePhysics = SKAction.run { [weak cube] in
@@ -331,6 +357,14 @@ class GameScene: SKScene,
 
     // MARK: – Helper methods
     
+    // Speed control function - can be used later to adjust difficulty
+    private func getCurrentFallSpeed() -> CGFloat {
+        // Base speed with small increase as score rises
+        let baseSpeed = 200.0
+        let speedIncrease = min(CGFloat(score) / 50.0, 0.5) // Max 50% faster at high scores
+        return baseSpeed * (1.0 + speedIncrease)
+    }
+    
     /// Sets up the game over screen
     private func setupGameOverNode() {
         gameOverNode = SKNode()
@@ -424,10 +458,10 @@ class GameScene: SKScene,
         
         // Reset game state
         score = 0
-        lives = 3
+        lives = 30
         gameState = .playing
         scoreLabel.text = "BTC: 0"
-        livesLabel.text = "Lives: 3"
+        livesLabel.text = "Lives: 30"
         
         // Clear all crypto coins
         self.enumerateChildNodes(withName: "cube") { node, _ in
