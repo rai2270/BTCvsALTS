@@ -26,15 +26,20 @@ class GameScene: SKScene,
     }
     // MARK: – Game state
     private var score: Int = 0
-    private var lives: Int = 30
     private var gameState: GameState = .playing
     private var scoreLabel: SKLabelNode!
     private var livesLabel: SKLabelNode!
+    
+    // Use the dedicated LifeManager to handle lives
+    private var lifeManager: LifeManager!
     private var gameOverNode: SKNode!
     private var victoryNode: SKNode!
     
     // Track last spawned altcoin type to ensure variety
     private var lastAltcoinType: Int = -1
+    
+    // Cooldown protection for losing lives
+    private var lifeLossCooldown: TimeInterval = 0
 
     private var spectrum: SpectrumNode!
     private var ship:     SKNode! // Changed from SKSpriteNode to SKNode
@@ -62,8 +67,8 @@ class GameScene: SKScene,
         AudioManager.shared.delegate = self
         // Score display with Bitcoin theme
         score = 0
-        lives = 3
         gameState = .playing
+        // Note: lives are now managed by lifeManager
         
         // Score display
         scoreLabel = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
@@ -92,7 +97,7 @@ class GameScene: SKScene,
         livesLabel.verticalAlignmentMode = .top
         livesLabel.position = CGPoint(x: size.width - 20, y: size.height - 20)
         livesLabel.zPosition = 100
-        livesLabel.text = "Lives: 30"
+        livesLabel.text = "Lives: 30" // Initial text, will be updated by LifeManager
         
         // Add background for lives
         let livesBg = SKShapeNode(rectOf: CGSize(width: 120, height: 36), cornerRadius: 8)
@@ -102,6 +107,9 @@ class GameScene: SKScene,
         livesBg.zPosition = 99
         addChild(livesBg)
         addChild(livesLabel)
+        
+        // Initialize LifeManager with 30 lives
+        lifeManager = LifeManager(startingLives: 30, label: livesLabel)
         
         // Prepare (but don't show) game over and victory nodes
         setupGameOverNode()
@@ -117,7 +125,7 @@ class GameScene: SKScene,
     
     func audioManagerDidFinishPlaying(_ manager: AudioManager) {
         // When music ends, if player still has lives, show victory screen
-        if gameState == .playing && lives > 0 {
+        if gameState == .playing && lifeManager.lives > 0 {
             showVictoryScreen()
         }
     }
@@ -546,7 +554,7 @@ class GameScene: SKScene,
         }
         
         if let livesRemainingLabel = victoryNode?.childNode(withName: "livesRemaining") as? SKLabelNode {
-            livesRemainingLabel.text = "Lives Remaining: \(lives)"
+            livesRemainingLabel.text = "Lives Remaining: \(lifeManager.lives)"
         }
         
         // Hide game over screen if visible
@@ -570,11 +578,14 @@ class GameScene: SKScene,
         victoryNode?.alpha = 0
         
         // Reset game state
-        score = 0
-        lives = 30
+        score = 0      // Reset score to 0
         gameState = .playing
         scoreLabel.text = "BTC: 0"
-        livesLabel.text = "Lives: 30"
+        
+        // Reset lives using the LifeManager
+        lifeManager.reset(to: 30)
+        
+        print("Game restarted: Score = \(score), Lives = \(lifeManager.lives)")
         
         // Clear all crypto coins
         self.enumerateChildNodes(withName: "cube") { node, _ in
@@ -602,38 +613,35 @@ class GameScene: SKScene,
         gameDelegate?.gameDidRestart()
     }
     
-    /// Check if a crypto coin has reached the bottom, lose a life if so
+    /// Check if a crypto coin has reached the bottom, lose a life if so (with cooldown protection)
     private func checkForMissedCoins() {
-        self.enumerateChildNodes(withName: "cube") { node, _ in
+        self.enumerateChildNodes(withName: "cube") { node, stop in
             if node.position.y < 30 && node.physicsBody?.isDynamic == true {
-                // Coin reached the bottom, lose a life
-                self.loseLife()
+                // Coin reached the bottom, lose a life using the LifeManager
+                // This automatically has cooldown protection built in
+                if self.lifeManager.loseLife() {
+                    // Debug print to verify we're only losing lives, not score
+                    print("Missed coin - Lives: \(self.lifeManager.lives), Score: \(self.score)")
+                    
+                    // Check for game over
+                    if self.lifeManager.isGameOver {
+                        self.showGameOver()
+                    }
+                    
+                    // Stop processing after losing one life
+                    stop.pointee = true
+                }
+                
+                // Remove the coin that hit the bottom
                 node.removeFromParent()
             }
         }
     }
     
-    /// Lose a life and check for game over
-    private func loseLife() {
-        lives -= 1
-        livesLabel.text = "Lives: \(lives)"
-        
-        // Visual feedback when losing a life
-        let redFlash = SKAction.sequence([
-            SKAction.colorize(with: .red, colorBlendFactor: 1.0, duration: 0.1),
-            SKAction.wait(forDuration: 0.1),
-            SKAction.colorize(withColorBlendFactor: 0, duration: 0.1)
-        ])
-        self.livesLabel.run(redFlash)
-        
-        // Check for game over
-        if lives <= 0 {
-            showGameOver()
-        }
-    }
+    // REMOVED: Old loseLife function is no longer needed since we're using LifeManager
     
     override func update(_ currentTime: TimeInterval) {
-        // Only process audio input if the game is active
+        // Only process updates if the game is active
         guard gameState == .playing else { return }
         
         // Check for missed coins in every frame if the game is still playing
@@ -790,9 +798,11 @@ class GameScene: SKScene,
         // Create explosion effect
         createExplosionEffect(at: contactPoint)
         
-        // update score
-        score += 1
+        // FIXED: Clearly separate score increment logic to avoid confusion with lives
+        let oldScore = score
+        score += 1  // Always increment score by 1 when hitting an altcoin
         scoreLabel.text = "BTC: \(score)"
+        print("Score increased: \(oldScore) -> \(score)")
         
         // remove both nodes
         contact.bodyA.node?.removeFromParent()
