@@ -14,7 +14,7 @@ class GameScene: SKScene,
     private var scoreLabel: SKLabelNode!
 
     private var spectrum: SpectrumNode!
-    private var ship:     SKSpriteNode!
+    private var ship:     SKNode! // Changed from SKSpriteNode to SKNode
     // Track which bars currently have a pending cube
     private var pendingBars = Set<Int>()
 
@@ -33,22 +33,28 @@ class GameScene: SKScene,
         spectrum.delegate = self
         addChild(spectrum)
 
-        /* Spaceship */
-        ship = SKSpriteNode(color: .white, size: CGSize(width: 50, height: 20))
-        ship.position = CGPoint(x: size.width * 0.5, y: 70)
-        addChild(ship)
+        /* Bitcoin spaceship */
+        createBitcoinShip()
 
         AudioManager.shared.delegate = self
-        // Score display
+        // Score display with Bitcoin theme
         score = 0
         scoreLabel = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
         scoreLabel.fontSize = 24
-        scoreLabel.fontColor = .white
+        scoreLabel.fontColor = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0) // Bitcoin orange
         scoreLabel.horizontalAlignmentMode = .left
         scoreLabel.verticalAlignmentMode = .top
         scoreLabel.position = CGPoint(x: 20, y: size.height - 20)
         scoreLabel.zPosition = 100
-        scoreLabel.text = "Score: 0"
+        scoreLabel.text = "BTC: 0"
+        
+        // Add background to make score more visible
+        let scoreBg = SKShapeNode(rectOf: CGSize(width: 120, height: 36), cornerRadius: 8)
+        scoreBg.fillColor = UIColor.black.withAlphaComponent(0.6)
+        scoreBg.strokeColor = UIColor.white.withAlphaComponent(0.4)
+        scoreBg.position = CGPoint(x: 70, y: size.height - 25)
+        scoreBg.zPosition = 99
+        addChild(scoreBg)
         addChild(scoreLabel)
     }
 
@@ -64,13 +70,100 @@ class GameScene: SKScene,
         // prevent multiple cubes on the same bar until this one starts falling
         guard !pendingBars.contains(barIndex) else { return }
         pendingBars.insert(barIndex)
-        let cubeSize: CGFloat = 8   // small pixel‑style cube
-        let cube = SKSpriteNode(color: .systemPink,
-                                size: CGSize(width: cubeSize, height: cubeSize))
+        
+        // Get index and color for this altcoin
+        let coinIndex = barIndex % 5
+        let coinColor = getCryptoColor(forIndex: coinIndex)
+        let coinSize: CGFloat = 20
+        
+        // Create base node for the altcoin
+        let cube = SKShapeNode()
         cube.name = "cube"
         cube.position = scenePoint
+        
+        // Create a different shape for each type of altcoin
+        switch coinIndex {
+        case 0: // ETH (diamond)
+            let path = UIBezierPath()
+            path.move(to: CGPoint(x: 0, y: coinSize/2))
+            path.addLine(to: CGPoint(x: coinSize/2, y: 0))
+            path.addLine(to: CGPoint(x: 0, y: -coinSize/2))
+            path.addLine(to: CGPoint(x: -coinSize/2, y: 0))
+            path.close()
+            cube.path = path.cgPath
+            cube.fillColor = coinColor
+            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
+            cube.lineWidth = 1.5
+            
+        case 1: // DOGE (circle with D)
+            cube.path = CGPath(ellipseIn: CGRect(x: -coinSize/2, y: -coinSize/2, width: coinSize, height: coinSize), transform: nil)
+            cube.fillColor = coinColor
+            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
+            cube.lineWidth = 1.5
+            
+            let label = SKLabelNode(text: "D")
+            label.fontName = "Helvetica-Bold"
+            label.fontSize = coinSize * 0.6
+            label.fontColor = .white
+            label.verticalAlignmentMode = .center
+            label.horizontalAlignmentMode = .center
+            cube.addChild(label)
+            
+        case 2: // LTC (silver hexagon)
+            let path = UIBezierPath()
+            for i in 0..<6 {
+                let angle = CGFloat(i) * (CGFloat.pi / 3)
+                let point = CGPoint(x: coinSize/2 * cos(angle), y: coinSize/2 * sin(angle))
+                if i == 0 {
+                    path.move(to: point)
+                } else {
+                    path.addLine(to: point)
+                }
+            }
+            path.close()
+            cube.path = path.cgPath
+            cube.fillColor = coinColor
+            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
+            cube.lineWidth = 1.5
+            
+        case 3: // XRP (3D triangle)
+            let path = UIBezierPath()
+            path.move(to: CGPoint(x: 0, y: coinSize/2))
+            path.addLine(to: CGPoint(x: coinSize/2, y: -coinSize/4))
+            path.addLine(to: CGPoint(x: -coinSize/2, y: -coinSize/4))
+            path.close()
+            cube.path = path.cgPath
+            cube.fillColor = coinColor
+            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
+            cube.lineWidth = 1.5
+            
+        default: // Generic coin (octagon)
+            let path = UIBezierPath()
+            for i in 0..<8 {
+                let angle = CGFloat(i) * (CGFloat.pi / 4)
+                let point = CGPoint(x: coinSize/2 * cos(angle), y: coinSize/2 * sin(angle))
+                if i == 0 {
+                    path.move(to: point)
+                } else {
+                    path.addLine(to: point)
+                }
+            }
+            path.close()
+            cube.path = path.cgPath
+            cube.fillColor = coinColor
+            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
+            cube.lineWidth = 1.5
+        }
+        
+        // Add pulsating effect
+        let pulse = SKAction.sequence([
+            SKAction.scale(to: 1.1, duration: 0.5),
+            SKAction.scale(to: 1.0, duration: 0.5)
+        ])
+        cube.run(SKAction.repeatForever(pulse))
+        
         // initially static until delay expires
-        let body = SKPhysicsBody(rectangleOf: cube.size)
+        let body = SKPhysicsBody(circleOfRadius: coinSize/2)
         body.isDynamic = false
         body.affectedByGravity = false
         body.categoryBitMask = PCat.cube
@@ -102,6 +195,15 @@ class GameScene: SKScene,
         if let t = touches.first {
             let location = t.location(in: self)
             ship.position.x = location.x
+            
+            // Don't let the ship move off-screen
+            let halfWidth = 25.0
+            if ship.position.x < halfWidth {
+                ship.position.x = halfWidth
+            } else if ship.position.x > size.width - halfWidth {
+                ship.position.x = size.width - halfWidth
+            }
+            
             // auto-fire bullets in three directions when moving
             shoot(dx: -200)
             shoot(dx: 0)
@@ -115,12 +217,39 @@ class GameScene: SKScene,
     /// Fires a bullet from the ship with given horizontal velocity.
     /// - Parameter dx: horizontal velocity component (default 0).
     private func shoot(dx: CGFloat = 0) {
-        let bullet = SKSpriteNode(color: .yellow,
-                                  size: CGSize(width: 4, height: 12))
-        bullet.position = CGPoint(x: ship.position.x,
-                                  y: ship.position.y + ship.size.height/2)
-
-        let body = SKPhysicsBody(rectangleOf: bullet.size)
+        // Create a Bitcoin-themed bullet (orange circle with B symbol)
+        let bulletSize: CGFloat = 15
+        
+        // Create the main bullet node
+        let bullet = SKShapeNode(circleOfRadius: bulletSize/2)
+        bullet.fillColor = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0) // Bitcoin orange
+        bullet.strokeColor = .white
+        bullet.lineWidth = 1.0
+        // Position the bullet right above the ship (we now use a fixed offset since SKNode doesn't have size)
+        bullet.position = CGPoint(x: ship.position.x, y: ship.position.y + 15)
+        bullet.name = "bullet"
+        
+        // Add 'B' label on top
+        let label = SKLabelNode(text: "B")
+        label.fontName = "Helvetica-Bold"
+        label.fontSize = bulletSize * 0.6
+        label.fontColor = .white
+        label.verticalAlignmentMode = .center
+        label.horizontalAlignmentMode = .center
+        bullet.addChild(label)
+        
+        // Add glow effect
+        let glowEffect = SKEffectNode()
+        glowEffect.shouldRasterize = true
+        glowEffect.filter = CIFilter(name: "CIGaussianBlur", parameters: ["inputRadius": 2.0])
+        let glowShape = SKShapeNode(circleOfRadius: bulletSize/2 + 1)
+        glowShape.fillColor = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 0.3)
+        glowShape.strokeColor = .clear
+        glowEffect.addChild(glowShape)
+        bullet.addChild(glowEffect)
+        
+        // Create physics body
+        let body = SKPhysicsBody(circleOfRadius: bulletSize/2)
         body.isDynamic = true
         body.affectedByGravity = false
         body.velocity = CGVector(dx: dx, dy: 800)
@@ -136,6 +265,144 @@ class GameScene: SKScene,
                               .removeFromParent()]))
     }
 
+    // MARK: – Helper methods
+    
+    /// Creates a texture for the thruster particles
+    private func createSparkTexture() -> SKTexture {
+        let size = CGSize(width: 8, height: 8)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0)
+        
+        let context = UIGraphicsGetCurrentContext()!
+        context.setFillColor(UIColor.white.cgColor)
+        context.fillEllipse(in: CGRect(origin: .zero, size: size))
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+        
+        return SKTexture(image: image)
+    }
+    
+    /// Creates an explosion effect at the given position
+    private func createExplosionEffect(at position: CGPoint) {
+        let explosion = SKEmitterNode()
+        explosion.position = position
+        explosion.particleTexture = createSparkTexture()
+        explosion.particleBirthRate = 500
+        explosion.numParticlesToEmit = 50
+        explosion.particleLifetime = 0.5
+        explosion.particleLifetimeRange = 0.3
+        explosion.particleSpeed = 60
+        explosion.particleSpeedRange = 30
+        explosion.emissionAngle = 0
+        explosion.emissionAngleRange = 2 * .pi
+        explosion.particleAlpha = 1.0
+        explosion.particleAlphaRange = 0.0
+        explosion.particleAlphaSpeed = -1.0
+        explosion.particleScale = 0.3
+        explosion.particleScaleRange = 0.2
+        explosion.particleScaleSpeed = -0.3
+        explosion.particleColor = .white
+        explosion.particleColorBlendFactor = 1.0
+        explosion.xAcceleration = 0
+        explosion.yAcceleration = 0
+        explosion.zPosition = 3
+        addChild(explosion)
+        
+        // Remove after effect is complete
+        let wait = SKAction.wait(forDuration: 1.0)
+        let remove = SKAction.removeFromParent()
+        explosion.run(SKAction.sequence([wait, remove]))
+    }
+    
+    /// Returns a color for different cryptocurrency symbols
+    private func getCryptoColor(forIndex index: Int) -> UIColor {
+        switch index {
+        case 0:
+            return UIColor(red: 113/255, green: 171/255, blue: 221/255, alpha: 1.0) // Ethereum blue
+        case 1:
+            return UIColor(red: 225/255, green: 187/255, blue: 0/255, alpha: 1.0) // Dogecoin yellow
+        case 2:
+            return UIColor(red: 181/255, green: 181/255, blue: 181/255, alpha: 1.0) // Litecoin silver
+        case 3:
+            return UIColor(red: 35/255, green: 41/255, blue: 55/255, alpha: 1.0) // Ripple dark blue
+        default:
+            return UIColor(red: 150/255, green: 100/255, blue: 200/255, alpha: 1.0) // Generic purple
+        }
+    }
+    
+    /// Creates a Bitcoin-themed ship for the player
+    private func createBitcoinShip() {
+        // Create parent node for the ship
+        let shipNode = SKNode()
+        shipNode.position = CGPoint(x: size.width * 0.5, y: 70)
+        addChild(shipNode)
+        
+        // Create ship base (orange trapezoid)
+        let shipPath = UIBezierPath()
+        shipPath.move(to: CGPoint(x: -25, y: -10))
+        shipPath.addLine(to: CGPoint(x: 25, y: -10))
+        shipPath.addLine(to: CGPoint(x: 15, y: 10))
+        shipPath.addLine(to: CGPoint(x: -15, y: 10))
+        shipPath.close()
+        
+        let shipBase = SKShapeNode(path: shipPath.cgPath)
+        shipBase.fillColor = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0) // Bitcoin orange
+        shipBase.strokeColor = .white
+        shipBase.lineWidth = 1.5
+        shipBase.zPosition = 1
+        shipNode.addChild(shipBase)
+        
+        // Add Bitcoin logo on top
+        let logo = SKLabelNode(text: "₿")
+        logo.fontName = "Helvetica-Bold"
+        logo.fontSize = 20
+        logo.fontColor = .white
+        logo.verticalAlignmentMode = .center
+        logo.horizontalAlignmentMode = .center
+        logo.position = CGPoint(x: 0, y: 0)
+        logo.zPosition = 2
+        shipNode.addChild(logo)
+        
+        // Add engine thrusters (two blue rectangles)
+        for xPos in [-15, 15] {
+            let thruster = SKShapeNode(rectOf: CGSize(width: 6, height: 8))
+            thruster.fillColor = UIColor(red: 64/255, green: 196/255, blue: 255/255, alpha: 1.0)
+            thruster.strokeColor = .white
+            thruster.lineWidth = 1
+            thruster.position = CGPoint(x: CGFloat(xPos), y: -14)
+            thruster.zPosition = 0
+            shipNode.addChild(thruster)
+            
+            // Add thruster animation
+            let thrusterFlame = SKEmitterNode()
+            // Use a simple circle for the particle since we may not have a spark texture
+            let sparkTexture = createSparkTexture()
+            thrusterFlame.particleTexture = sparkTexture
+            thrusterFlame.particleBirthRate = 50
+            thrusterFlame.particleLifetime = 0.5
+            thrusterFlame.particleSpeed = 30
+            thrusterFlame.particleSpeedRange = 10
+            thrusterFlame.particleAlpha = 0.7
+            thrusterFlame.particleAlphaRange = 0.3
+            thrusterFlame.particleAlphaSpeed = -1.0
+            thrusterFlame.particleScale = 0.2
+            thrusterFlame.particleScaleRange = 0.1
+            thrusterFlame.particleScaleSpeed = -0.1
+            thrusterFlame.particleColor = .cyan
+            thrusterFlame.particleColorBlendFactor = 0.7
+            thrusterFlame.particleRotation = 0
+            thrusterFlame.particleRotationRange = 2 * .pi
+            thrusterFlame.particlePosition = CGPoint(x: 0, y: -5)
+            thrusterFlame.emissionAngle = .pi / 2 * 3 // Down
+            thrusterFlame.emissionAngleRange = .pi / 4
+            thrusterFlame.zPosition = -1
+            thruster.addChild(thrusterFlame)
+        }
+        
+        // Store ship reference
+        self.ship = shipNode
+    }
+    
     // MARK: – Collisions
     func didBegin(_ contact: SKPhysicsContact) {
         // detect cube–bullet collision
@@ -143,9 +410,17 @@ class GameScene: SKScene,
               == (PCat.cube | PCat.bullet) else {
             return
         }
+        
+        // Get the positions for the explosion effect
+        let contactPoint = contact.bodyA.node?.position ?? contact.bodyB.node?.position ?? .zero
+        
+        // Create explosion effect
+        createExplosionEffect(at: contactPoint)
+        
         // update score
         score += 1
-        scoreLabel.text = "Score: \(score)"
+        scoreLabel.text = "BTC: \(score)"
+        
         // remove both nodes
         contact.bodyA.node?.removeFromParent()
         contact.bodyB.node?.removeFromParent()
