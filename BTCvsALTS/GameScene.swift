@@ -22,6 +22,7 @@ class GameScene: SKScene,
     enum GameState {
         case playing
         case gameOver
+        case victory
     }
     // MARK: – Game state
     private var score: Int = 0
@@ -30,6 +31,7 @@ class GameScene: SKScene,
     private var scoreLabel: SKLabelNode!
     private var livesLabel: SKLabelNode!
     private var gameOverNode: SKNode!
+    private var victoryNode: SKNode!
     
     // Track last spawned altcoin type to ensure variety
     private var lastAltcoinType: Int = -1
@@ -101,13 +103,23 @@ class GameScene: SKScene,
         addChild(livesBg)
         addChild(livesLabel)
         
-        // Prepare (but don't show) game over node
+        // Prepare (but don't show) game over and victory nodes
         setupGameOverNode()
+        setupVictoryScreen()
     }
 
     // MARK: – Audio
+    // MARK: - AudioManagerDelegate methods
+    
     func audioManager(_ m: AudioManager, didUpdateSpectrum s: [Float]) {
         spectrum.updateSpectrum(s)
+    }
+    
+    func audioManagerDidFinishPlaying(_ manager: AudioManager) {
+        // When music ends, if player still has lives, show victory screen
+        if gameState == .playing && lives > 0 {
+            showVictoryScreen()
+        }
     }
 
     // MARK: – Spawn cube at timed peak
@@ -284,28 +296,29 @@ class GameScene: SKScene,
             shoot(dx: 200)
         }
     }
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if gameState == .gameOver {
-            // Check if tap is on the restart button
-            if let touch = touches.first {
-                let location = touch.location(in: self)
-                let nodes = self.nodes(at: location)
-                
-                if nodes.contains(where: { $0.name == "restartButton" }) {
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first else { return }
+        let touchLocation = touch.location(in: self)
+        
+        if gameState == .gameOver || gameState == .victory {
+            // Check if restart button was tapped on either game over or victory screen
+            let nodeToCheck = gameState == .gameOver ? gameOverNode : victoryNode
+            
+            if let restartButton = nodeToCheck?.childNode(withName: "restartButton") {
+                if restartButton.contains(touchLocation) {
                     restartGame()
                 }
             }
-            return
+        } else {
+            shoot()
         }
-        
-        shoot()
     }
 
     /// Fires a bullet from the ship with given horizontal velocity.
     /// - Parameter dx: horizontal velocity component (default 0).
     private func shoot(dx: CGFloat = 0) {
-        if gameState == .gameOver {
-            return // Don't shoot when game is over
+        if gameState == .gameOver || gameState == .victory {
+            return // Don't shoot when game is over or won
         }
         // Create a Bitcoin-themed bullet (orange circle with B symbol)
         let bulletSize: CGFloat = 15
@@ -316,7 +329,7 @@ class GameScene: SKScene,
         bullet.strokeColor = .white
         bullet.lineWidth = 1.0
         // Position the bullet right above the ship (we now use a fixed offset since SKNode doesn't have size)
-        bullet.position = CGPoint(x: ship.position.x, y: ship.position.y + 15)
+        bullet.position = CGPoint(x: ship?.position.x ?? 0, y: ship?.position.y ?? 0 + 15)
         bullet.name = "bullet"
         
         // Add 'B' label on top
@@ -368,17 +381,17 @@ class GameScene: SKScene,
     /// Sets up the game over screen
     private func setupGameOverNode() {
         gameOverNode = SKNode()
-        gameOverNode.alpha = 0
-        gameOverNode.zPosition = 1000
-        gameOverNode.isHidden = true
-        addChild(gameOverNode)
+        gameOverNode?.alpha = 0
+        gameOverNode?.zPosition = 1000
+        gameOverNode?.isHidden = true
+        addChild(gameOverNode ?? SKNode())
         
         // Semi-transparent background
         let background = SKShapeNode(rectOf: CGSize(width: size.width, height: size.height))
         background.fillColor = UIColor.black.withAlphaComponent(0.7)
         background.strokeColor = .clear
         background.position = CGPoint(x: size.width/2, y: size.height/2)
-        gameOverNode.addChild(background)
+        gameOverNode?.addChild(background)
         
         // Game over text
         let gameOverText = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
@@ -386,15 +399,15 @@ class GameScene: SKScene,
         gameOverText.fontSize = 52
         gameOverText.fontColor = .red
         gameOverText.position = CGPoint(x: size.width/2, y: size.height/2 + 100)
-        gameOverNode.addChild(gameOverText)
+        gameOverNode?.addChild(gameOverText)
         
         // Bitcoin crashed text
         let btcCrashedText = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
-        btcCrashedText.text = "Bitcoin Defeated By ALTS!"
+        btcCrashedText.text = "Bitcoin Crashed!"
         btcCrashedText.fontSize = 32
         btcCrashedText.fontColor = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0) // Bitcoin orange
         btcCrashedText.position = CGPoint(x: size.width/2, y: size.height/2 + 50)
-        gameOverNode.addChild(btcCrashedText)
+        gameOverNode?.addChild(btcCrashedText)
         
         // Final score
         let finalScoreText = SKLabelNode(fontNamed: "HelveticaNeue")
@@ -403,7 +416,7 @@ class GameScene: SKScene,
         finalScoreText.fontSize = 30
         finalScoreText.fontColor = .white
         finalScoreText.position = CGPoint(x: size.width/2, y: size.height/2)
-        gameOverNode.addChild(finalScoreText)
+        gameOverNode?.addChild(finalScoreText)
         
         // Restart button
         let restartButton = SKShapeNode(rectOf: CGSize(width: 200, height: 60), cornerRadius: 10)
@@ -412,7 +425,77 @@ class GameScene: SKScene,
         restartButton.strokeColor = .white
         restartButton.lineWidth = 2
         restartButton.position = CGPoint(x: size.width/2, y: size.height/2 - 80)
-        gameOverNode.addChild(restartButton)
+        gameOverNode?.addChild(restartButton)
+        
+        // Restart button text
+        let restartText = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+        restartText.text = "RESTART"
+        restartText.name = "restartButton" // Same name to capture touches
+        restartText.fontSize = 28
+        restartText.fontColor = .white
+        restartText.verticalAlignmentMode = .center
+        restartText.horizontalAlignmentMode = .center
+        restartText.position = CGPoint(x: 0, y: 0)
+        restartButton.addChild(restartText)
+    }
+    
+    /// Sets up the victory screen
+    private func setupVictoryScreen() {
+        victoryNode = SKNode()
+        victoryNode?.alpha = 0
+        victoryNode?.zPosition = 1000
+        victoryNode?.isHidden = true
+        addChild(victoryNode ?? SKNode())
+        
+        // Semi-transparent background
+        let background = SKShapeNode(rectOf: CGSize(width: size.width, height: size.height))
+        background.fillColor = UIColor.black.withAlphaComponent(0.7)
+        background.strokeColor = .clear
+        background.position = CGPoint(x: size.width/2, y: size.height/2)
+        victoryNode?.addChild(background)
+        
+        // Victory text
+        let victoryText = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+        victoryText.text = "VICTORY"
+        victoryText.fontSize = 52
+        victoryText.fontColor = .green
+        victoryText.position = CGPoint(x: size.width/2, y: size.height/2 + 100)
+        victoryNode?.addChild(victoryText)
+        
+        // Bitcoin survived text
+        let btcSurvivedText = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+        btcSurvivedText.text = "Bitcoin Survived The ALTS!"
+        btcSurvivedText.fontSize = 32
+        btcSurvivedText.fontColor = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0) // Bitcoin orange
+        btcSurvivedText.position = CGPoint(x: size.width/2, y: size.height/2 + 50)
+        victoryNode?.addChild(btcSurvivedText)
+        
+        // Final score
+        let finalScoreText = SKLabelNode(fontNamed: "HelveticaNeue")
+        finalScoreText.name = "finalScore"
+        finalScoreText.text = "Final BTC Score: 0"
+        finalScoreText.fontSize = 30
+        finalScoreText.fontColor = .white
+        finalScoreText.position = CGPoint(x: size.width/2, y: size.height/2)
+        victoryNode?.addChild(finalScoreText)
+        
+        // Lives remaining
+        let livesRemainingText = SKLabelNode(fontNamed: "HelveticaNeue")
+        livesRemainingText.name = "livesRemaining"
+        livesRemainingText.text = "Lives Remaining: 0"
+        livesRemainingText.fontSize = 30
+        livesRemainingText.fontColor = .white
+        livesRemainingText.position = CGPoint(x: size.width/2, y: size.height/2 - 30)
+        victoryNode?.addChild(livesRemainingText)
+        
+        // Restart button
+        let restartButton = SKShapeNode(rectOf: CGSize(width: 200, height: 60), cornerRadius: 10)
+        restartButton.name = "restartButton"
+        restartButton.fillColor = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0) // Bitcoin orange
+        restartButton.strokeColor = .white
+        restartButton.lineWidth = 2
+        restartButton.position = CGPoint(x: size.width/2, y: size.height/2 - 80)
+        victoryNode?.addChild(restartButton)
         
         // Restart button text
         let restartText = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
@@ -435,6 +518,9 @@ class GameScene: SKScene,
             finalScore.text = "Final BTC: \(score)"
         }
         
+        // Hide victory screen if visible
+        victoryNode.isHidden = true
+        
         gameOverNode.isHidden = false
         
         // Fade in the game over screen
@@ -450,11 +536,38 @@ class GameScene: SKScene,
         gameDelegate?.gameDidEnd(withScore: score)
     }
     
+    /// Shows the victory screen when player completes the song with lives remaining
+    private func showVictoryScreen() {
+        gameState = .victory
+        
+        // Update final score and lives remaining
+        if let finalScoreLabel = victoryNode?.childNode(withName: "finalScore") as? SKLabelNode {
+            finalScoreLabel.text = "Final BTC Score: \(score)"
+        }
+        
+        if let livesRemainingLabel = victoryNode?.childNode(withName: "livesRemaining") as? SKLabelNode {
+            livesRemainingLabel.text = "Lives Remaining: \(lives)"
+        }
+        
+        // Hide game over screen if visible
+        gameOverNode?.isHidden = true
+        
+        // Animate the victory screen
+        victoryNode?.isHidden = false
+        victoryNode?.alpha = 0
+        victoryNode?.run(SKAction.fadeIn(withDuration: 0.5))
+        
+        // Notify delegate that game is over with victory
+        gameDelegate?.gameDidEnd(withScore: score)
+    }
+    
     /// Restarts the game
     private func restartGame() {
-        // Hide game over screen
-        gameOverNode.isHidden = true
-        gameOverNode.alpha = 0
+        // Hide game over and victory screens
+        gameOverNode?.isHidden = true
+        gameOverNode?.alpha = 0
+        victoryNode?.isHidden = true
+        victoryNode?.alpha = 0
         
         // Reset game state
         score = 0
@@ -474,7 +587,7 @@ class GameScene: SKScene,
         }
         
         // Reset ship position
-        ship.position.x = size.width * 0.5
+        ship?.position.x = size.width * 0.5
         
         // Reset pending bars
         pendingBars.removeAll()
@@ -520,10 +633,11 @@ class GameScene: SKScene,
     }
     
     override func update(_ currentTime: TimeInterval) {
+        // Only process audio input if the game is active
+        guard gameState == .playing else { return }
+        
         // Check for missed coins in every frame if the game is still playing
-        if gameState == .playing {
-            checkForMissedCoins()
-        }
+        checkForMissedCoins()
     }
     
     /// Creates a texture for the thruster particles

@@ -5,6 +5,7 @@ import Accelerate
 /// Sends real‑time FFT magnitudes to its delegate.
 protocol AudioManagerDelegate: AnyObject {
     func audioManager(_ manager: AudioManager, didUpdateSpectrum spectrum: [Float])
+    func audioManagerDidFinishPlaying(_ manager: AudioManager)
 }
 
 final class AudioManager {
@@ -44,7 +45,18 @@ final class AudioManager {
         
         let file = try AVAudioFile(forReading: url)
         playerNode.stop()
-        playerNode.scheduleFile(file, at: nil, completionHandler: nil)
+        
+        // Schedule file with completion handler
+        playerNode.scheduleFile(file, at: nil) { [weak self] in
+            guard let self = self else { return }
+            
+            // Notify delegate that playback has finished
+            DispatchQueue.main.async {
+                self.isPlaying = false
+                self.delegate?.audioManagerDidFinishPlaying(self)
+            }
+        }
+        
         playerNode.play()
         isPlaying = true
     }
