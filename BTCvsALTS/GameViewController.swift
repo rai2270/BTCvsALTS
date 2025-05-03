@@ -35,43 +35,70 @@ class GameViewController: UIViewController,
 
     // MARK: – UI layout -------------------------------------------------
     private func setupTopControls() {
+        // Create a more compact header bar
+        let headerBar = UIView()
+        headerBar.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        headerBar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(headerBar)
+        
+        // Create a smaller title label with the Bitcoin orange color
         let titleLabel = UILabel()
         titleLabel.text = "BTCvsALTS"
-        titleLabel.font = .boldSystemFont(ofSize: 32)
-        titleLabel.textColor = .white
+        titleLabel.font = .boldSystemFont(ofSize: 22)
+        titleLabel.textColor = UIColor(red: 247/255, green: 147/255, blue: 26/255, alpha: 1.0) // Bitcoin orange
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(titleLabel)
+        headerBar.addSubview(titleLabel)
 
-        configure(selectButton,  title: "Select Song", bg: .systemBlue)
-        configure(playPauseButton, title: "Play",        bg: .systemGreen)
+        // Configure smaller, more compact buttons
+        configure(selectButton, title: "Select", bg: .systemBlue)
+        configure(playPauseButton, title: "Play", bg: .systemGreen)
 
         selectButton.addTarget(self, action: #selector(selectSongTapped), for: .touchUpInside)
         playPauseButton.addTarget(self, action: #selector(playPauseTapped), for: .touchUpInside)
 
+        // Create horizontal stack for buttons with less spacing
         let stack = UIStackView(arrangedSubviews: [selectButton, playPauseButton])
         stack.axis = .horizontal
         stack.distribution = .fillEqually
-        stack.spacing = 16
+        stack.spacing = 8
         stack.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(stack)
+        headerBar.addSubview(stack)
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
-            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-
-            stack.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 24),
-            stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 24),
-            stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -24),
-            selectButton.heightAnchor.constraint(equalToConstant: 44)
+            // Make header bar compact
+            headerBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            headerBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            headerBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            headerBar.heightAnchor.constraint(equalToConstant: 44), // Compact height
+            
+            // Position title on the left side
+            titleLabel.leadingAnchor.constraint(equalTo: headerBar.leadingAnchor, constant: 16),
+            titleLabel.centerYAnchor.constraint(equalTo: headerBar.centerYAnchor),
+            
+            // Position buttons on the right side
+            stack.trailingAnchor.constraint(equalTo: headerBar.trailingAnchor, constant: -8),
+            stack.centerYAnchor.constraint(equalTo: headerBar.centerYAnchor),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: titleLabel.trailingAnchor, constant: 8),
+            selectButton.heightAnchor.constraint(equalToConstant: 32) // Smaller buttons
         ])
     }
 
     private func configure(_ btn: UIButton, title: String, bg: UIColor) {
+        // Create more compact buttons with smaller text
         btn.setTitle(title, for: .normal)
         btn.setTitleColor(.white, for: .normal)
-        btn.backgroundColor = bg.withAlphaComponent(0.9)
-        btn.layer.cornerRadius = 12
-        btn.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+        btn.backgroundColor = bg.withAlphaComponent(0.85)
+        btn.layer.cornerRadius = 8 // Smaller corner radius
+        btn.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold) // Smaller font
+        
+        // Add shadow for better visibility
+        btn.layer.shadowColor = UIColor.black.cgColor
+        btn.layer.shadowOffset = CGSize(width: 0, height: 1)
+        btn.layer.shadowOpacity = 0.3
+        btn.layer.shadowRadius = 2
+        
+        // Add padding using content insets
+        btn.contentEdgeInsets = UIEdgeInsets(top: 4, left: 10, bottom: 4, right: 10)
     }
 
     // MARK: – SpriteKit -------------------------------------------------
@@ -80,9 +107,10 @@ class GameViewController: UIViewController,
         skView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(skView)
 
-        if let stack = view.subviews.first(where: { $0 is UIStackView }) {
+        // Find our header bar and position the game view directly beneath it
+        if let headerBar = view.subviews.first(where: { $0.backgroundColor != nil }) {
             NSLayoutConstraint.activate([
-                skView.topAnchor.constraint(equalTo: stack.bottomAnchor, constant: 16),
+                skView.topAnchor.constraint(equalTo: headerBar.bottomAnchor), // No gap
                 skView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 skView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 skView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
