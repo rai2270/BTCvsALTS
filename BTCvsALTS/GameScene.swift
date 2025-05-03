@@ -83,7 +83,7 @@ class GameScene: SKScene,
         // Add background to make score more visible
         let scoreBg = SKShapeNode(rectOf: CGSize(width: 120, height: 36), cornerRadius: 8)
         scoreBg.fillColor = UIColor.black.withAlphaComponent(0.6)
-        scoreBg.strokeColor = UIColor.white.withAlphaComponent(0.4)
+        scoreBg.strokeColor = .clear
         scoreBg.position = CGPoint(x: 70, y: size.height - 25)
         scoreBg.zPosition = 99
         addChild(scoreBg)
@@ -102,7 +102,7 @@ class GameScene: SKScene,
         // Add background for lives
         let livesBg = SKShapeNode(rectOf: CGSize(width: 120, height: 36), cornerRadius: 8)
         livesBg.fillColor = UIColor.black.withAlphaComponent(0.6)
-        livesBg.strokeColor = UIColor.white.withAlphaComponent(0.4)
+        livesBg.strokeColor = .clear
         livesBg.position = CGPoint(x: size.width - 70, y: size.height - 25)
         livesBg.zPosition = 99
         addChild(livesBg)
