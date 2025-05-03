@@ -162,86 +162,201 @@ class GameScene: SKScene,
         
         // Create a different shape for each type of altcoin
         switch coinIndex {
-        case 0: // ETH (diamond)
-            let path = UIBezierPath()
-            path.move(to: CGPoint(x: 0, y: coinSize/2))
-            path.addLine(to: CGPoint(x: coinSize/2, y: 0))
-            path.addLine(to: CGPoint(x: 0, y: -coinSize/2))
-            path.addLine(to: CGPoint(x: -coinSize/2, y: 0))
-            path.close()
-            cube.path = path.cgPath
-            cube.fillColor = coinColor
-            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
-            cube.lineWidth = 1.5
-            
-            // Simple falling motion (no special pattern)
-            
-        case 1: // DOGE (circle with D)
+        case 0: // ETH (Ethereum)
+            // Create a circular coin shape for Ethereum
             cube.path = CGPath(ellipseIn: CGRect(x: -coinSize/2, y: -coinSize/2, width: coinSize, height: coinSize), transform: nil)
             cube.fillColor = coinColor
             cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
             cube.lineWidth = 1.5
             
-            let label = SKLabelNode(text: "D")
-            label.fontName = "Helvetica-Bold"
-            label.fontSize = coinSize * 0.6
-            label.fontColor = .white
-            label.verticalAlignmentMode = .center
-            label.horizontalAlignmentMode = .center
-            cube.addChild(label)
+            // Add the Ethereum logo (stylized diamond)
+            let ethLogo = SKShapeNode()
+            let logoSize = coinSize * 0.6
+            let logoPath = UIBezierPath()
+            logoPath.move(to: CGPoint(x: 0, y: logoSize/2))
+            logoPath.addLine(to: CGPoint(x: logoSize/2, y: 0))
+            logoPath.addLine(to: CGPoint(x: 0, y: -logoSize/2))
+            logoPath.addLine(to: CGPoint(x: -logoSize/2, y: 0))
+            logoPath.close()
+            ethLogo.path = logoPath.cgPath
+            ethLogo.fillColor = .white
+            ethLogo.strokeColor = .clear
+            ethLogo.zPosition = 1
+            cube.addChild(ethLogo)
             
-            // Simple falling motion (no special pattern)
+            // Add "ETH" label under the logo
+            let ethLabel = SKLabelNode(text: "ETH")
+            ethLabel.fontName = "Helvetica-Bold"
+            ethLabel.fontSize = coinSize * 0.2
+            ethLabel.fontColor = .white
+            ethLabel.position = CGPoint(x: 0, y: -logoSize/2 - 5)
+            ethLabel.verticalAlignmentMode = .top
+            ethLabel.horizontalAlignmentMode = .center
+            cube.addChild(ethLabel)
             
-        case 2: // LTC (silver hexagon)
-            let path = UIBezierPath()
-            for i in 0..<6 {
-                let angle = CGFloat(i) * (CGFloat.pi / 3)
-                let point = CGPoint(x: coinSize/2 * cos(angle), y: coinSize/2 * sin(angle))
-                if i == 0 {
-                    path.move(to: point)
-                } else {
-                    path.addLine(to: point)
-                }
+            // Add subtle rotation animation
+            let rotate = SKAction.rotate(byAngle: .pi/8, duration: 0.8)
+            let rotateBack = SKAction.rotate(byAngle: -.pi/8, duration: 0.8)
+            let sequence = SKAction.sequence([rotate, rotateBack])
+            let repeatForever = SKAction.repeatForever(sequence)
+            cube.run(repeatForever)
+            
+        case 1: // DOGE (Dogecoin)
+            // Create a circular coin shape for Dogecoin
+            cube.path = CGPath(ellipseIn: CGRect(x: -coinSize/2, y: -coinSize/2, width: coinSize, height: coinSize), transform: nil)
+            cube.fillColor = coinColor // Dogecoin yellow
+            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
+            cube.lineWidth = 1.5
+            
+            // Add "DOGE" text
+            let dogeLabel = SKLabelNode(text: "DOGE")
+            dogeLabel.fontName = "Helvetica-Bold"
+            dogeLabel.fontSize = coinSize * 0.25
+            dogeLabel.fontColor = .white
+            dogeLabel.verticalAlignmentMode = .bottom
+            dogeLabel.horizontalAlignmentMode = .center
+            dogeLabel.position = CGPoint(x: 0, y: -coinSize/4)
+            cube.addChild(dogeLabel)
+            
+            // Add simple Doge face/icon (simplified)
+            let dogeFace = SKShapeNode(circleOfRadius: coinSize * 0.25)
+            dogeFace.position = CGPoint(x: 0, y: coinSize * 0.1)
+            dogeFace.fillColor = .white
+            dogeFace.strokeColor = .clear
+            cube.addChild(dogeFace)
+            
+            // Add eyes
+            let leftEye = SKShapeNode(circleOfRadius: coinSize * 0.05)
+            leftEye.fillColor = coinColor
+            leftEye.position = CGPoint(x: -coinSize * 0.1, y: coinSize * 0.15)
+            dogeFace.addChild(leftEye)
+            
+            let rightEye = SKShapeNode(circleOfRadius: coinSize * 0.05)
+            rightEye.fillColor = coinColor
+            rightEye.position = CGPoint(x: coinSize * 0.1, y: coinSize * 0.15)
+            dogeFace.addChild(rightEye)
+            
+            // Add fun "wagging" animation for the DOGE coin
+            let wag1 = SKAction.rotate(toAngle: .pi/16, duration: 0.2)
+            let wag2 = SKAction.rotate(toAngle: -.pi/16, duration: 0.2)
+            let wagSequence = SKAction.sequence([wag1, wag2])
+            let repeatWag = SKAction.repeatForever(wagSequence)
+            cube.run(repeatWag)
+            
+        case 2: // LTC (Litecoin)
+            // Create a circular coin shape for Litecoin
+            cube.path = CGPath(ellipseIn: CGRect(x: -coinSize/2, y: -coinSize/2, width: coinSize, height: coinSize), transform: nil)
+            cube.fillColor = coinColor // Litecoin silver
+            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
+            cube.lineWidth = 1.5
+            
+            // Add the Litecoin "L" logo
+            let ltcLogo = SKShapeNode()
+            let logoPath = UIBezierPath()
+            // Stylized L shape
+            logoPath.move(to: CGPoint(x: -coinSize/6, y: coinSize/4))
+            logoPath.addLine(to: CGPoint(x: -coinSize/6, y: -coinSize/6))
+            logoPath.addLine(to: CGPoint(x: coinSize/6, y: -coinSize/6))
+            ltcLogo.path = logoPath.cgPath
+            ltcLogo.strokeColor = .white
+            ltcLogo.lineWidth = coinSize/10
+            ltcLogo.lineCap = .round
+            ltcLogo.lineJoin = .round
+            cube.addChild(ltcLogo)
+            
+            // Add "LTC" label
+            let ltcLabel = SKLabelNode(text: "LTC")
+            ltcLabel.fontName = "Helvetica-Bold"
+            ltcLabel.fontSize = coinSize * 0.25
+            ltcLabel.fontColor = .white
+            ltcLabel.position = CGPoint(x: 0, y: -coinSize/3)
+            ltcLabel.verticalAlignmentMode = .center
+            ltcLabel.horizontalAlignmentMode = .center
+            cube.addChild(ltcLabel)
+            
+            // Add subtle pulsing animation for LTC
+            let scaleUp = SKAction.scale(to: 1.1, duration: 0.5)
+            let scaleDown = SKAction.scale(to: 0.9, duration: 0.5)
+            let pulseSequence = SKAction.sequence([scaleUp, scaleDown])
+            let repeatPulse = SKAction.repeatForever(pulseSequence)
+            cube.run(repeatPulse)
+            
+        case 3: // XRP (Ripple)
+            // Create a circular coin shape for XRP
+            cube.path = CGPath(ellipseIn: CGRect(x: -coinSize/2, y: -coinSize/2, width: coinSize, height: coinSize), transform: nil)
+            cube.fillColor = coinColor // XRP blue
+            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
+            cube.lineWidth = 1.5
+            
+            // Add Ripple logo (stylized triangular shape)
+            let xrpLogo = SKShapeNode()
+            let logoPath = UIBezierPath()
+            let logoSize = coinSize * 0.4
+            
+            // Create ripple-like symbol
+            for i in stride(from: 0, to: 3, by: 1) {
+                let scale = 1.0 - (CGFloat(i) * 0.2)
+                let trianglePath = UIBezierPath()
+                trianglePath.move(to: CGPoint(x: 0, y: logoSize/2 * scale))
+                trianglePath.addLine(to: CGPoint(x: logoSize/2 * scale, y: -logoSize/4 * scale))
+                trianglePath.addLine(to: CGPoint(x: -logoSize/2 * scale, y: -logoSize/4 * scale))
+                trianglePath.close()
+                logoPath.append(trianglePath)
             }
-            path.close()
-            cube.path = path.cgPath
-            cube.fillColor = coinColor
+            
+            xrpLogo.path = logoPath.cgPath
+            xrpLogo.fillColor = .clear
+            xrpLogo.strokeColor = .white
+            xrpLogo.lineWidth = 1.0
+            cube.addChild(xrpLogo)
+            
+            // Add "XRP" label
+            let xrpLabel = SKLabelNode(text: "XRP")
+            xrpLabel.fontName = "Helvetica-Bold"
+            xrpLabel.fontSize = coinSize * 0.25
+            xrpLabel.fontColor = .white
+            xrpLabel.position = CGPoint(x: 0, y: -coinSize/3)
+            xrpLabel.verticalAlignmentMode = .center
+            xrpLabel.horizontalAlignmentMode = .center
+            cube.addChild(xrpLabel)
+            
+            // Add spinning animation for XRP
+            let spin = SKAction.rotate(byAngle: .pi * 2, duration: 2.0)
+            let repeatSpin = SKAction.repeatForever(spin)
+            xrpLogo.run(repeatSpin)
             cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
             cube.lineWidth = 1.5
             
             // Simple falling motion (no special pattern)
             
-        case 3: // XRP (3D triangle)
-            let path = UIBezierPath()
-            path.move(to: CGPoint(x: 0, y: coinSize/2))
-            path.addLine(to: CGPoint(x: coinSize/2, y: -coinSize/4))
-            path.addLine(to: CGPoint(x: -coinSize/2, y: -coinSize/4))
-            path.close()
-            cube.path = path.cgPath
+        default: // Generic altcoin
+            // Create a circular coin for other altcoins
+            cube.path = CGPath(ellipseIn: CGRect(x: -coinSize/2, y: -coinSize/2, width: coinSize, height: coinSize), transform: nil)
             cube.fillColor = coinColor
             cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
             cube.lineWidth = 1.5
             
-            // Simple falling motion (no special pattern)
+            // Add generic "ALT" text
+            let altLabel = SKLabelNode(text: "ALT")
+            altLabel.fontName = "Helvetica-Bold"
+            altLabel.fontSize = coinSize * 0.35
+            altLabel.fontColor = .white
+            altLabel.position = CGPoint(x: 0, y: 0)
+            altLabel.verticalAlignmentMode = .center
+            altLabel.horizontalAlignmentMode = .center
+            cube.addChild(altLabel)
             
-        default: // Generic coin (octagon)
-            let path = UIBezierPath()
-            for i in 0..<8 {
-                let angle = CGFloat(i) * (CGFloat.pi / 4)
-                let point = CGPoint(x: coinSize/2 * cos(angle), y: coinSize/2 * sin(angle))
-                if i == 0 {
-                    path.move(to: point)
-                } else {
-                    path.addLine(to: point)
-                }
-            }
-            path.close()
-            cube.path = path.cgPath
-            cube.fillColor = coinColor
-            cube.strokeColor = UIColor(white: 1.0, alpha: 0.8)
-            cube.lineWidth = 1.5
+            // Add subtle rotation and pulse combination
+            let rotate = SKAction.rotate(byAngle: .pi * 2, duration: 4.0)
+            let repeatRotate = SKAction.repeatForever(rotate)
             
-            // Simple falling motion (no special pattern)
+            let pulse = SKAction.sequence([
+                SKAction.scale(to: 1.1, duration: 0.3),
+                SKAction.scale(to: 0.9, duration: 0.3)
+            ])
+            let repeatPulse = SKAction.repeatForever(pulse)
+            
+            cube.run(SKAction.group([repeatRotate, repeatPulse]))
         }
         
         // Add pulsating effect
@@ -695,19 +810,21 @@ class GameScene: SKScene,
         explosion.run(SKAction.sequence([wait, remove]))
     }
     
-    /// Returns a color for different cryptocurrency symbols
+    /// Returns a color for different cryptocurrency symbols with their official brand colors
     private func getCryptoColor(forIndex index: Int) -> UIColor {
         switch index {
         case 0:
-            return UIColor(red: 113/255, green: 171/255, blue: 221/255, alpha: 1.0) // Ethereum blue
+            return UIColor(red: 113/255, green: 142/255, blue: 212/255, alpha: 1.0) // Ethereum blue/purple
         case 1:
-            return UIColor(red: 225/255, green: 187/255, blue: 0/255, alpha: 1.0) // Dogecoin yellow
+            return UIColor(red: 237/255, green: 176/255, blue: 31/255, alpha: 1.0) // Dogecoin gold/yellow
         case 2:
-            return UIColor(red: 181/255, green: 181/255, blue: 181/255, alpha: 1.0) // Litecoin silver
+            return UIColor(red: 183/255, green: 187/255, blue: 198/255, alpha: 1.0) // Litecoin silver
         case 3:
-            return UIColor(red: 35/255, green: 41/255, blue: 55/255, alpha: 1.0) // Ripple dark blue
+            return UIColor(red: 35/255, green: 159/255, blue: 196/255, alpha: 1.0) // XRP blue
         default:
-            return UIColor(red: 150/255, green: 100/255, blue: 200/255, alpha: 1.0) // Generic purple
+            // Random but consistent color for other altcoins
+            let hue = CGFloat(index % 10) / 10.0 // Gives us 10 different colors
+            return UIColor(hue: hue, saturation: 0.8, brightness: 0.9, alpha: 1.0)
         }
     }
     
