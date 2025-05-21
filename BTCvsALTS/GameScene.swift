@@ -452,7 +452,13 @@ class GameScene: SKScene,
         bullet.strokeColor = .white
         bullet.lineWidth = 1.0
         // Position the bullet right above the ship (we now use a fixed offset since SKNode doesn't have size)
-        bullet.position = CGPoint(x: ship?.position.x ?? 0, y: ship?.position.y ?? 0 + 15)
+        // Place the bullet slightly above the ship. The previous expression
+        // `ship?.position.y ?? 0 + 15` evaluated as `ship?.position.y ?? 15`
+        // because `+` has higher precedence than `??`. As a result, bullets
+        // spawned at the ship's centre instead of above it. Parenthesising fixes
+        // the issue.
+        bullet.position = CGPoint(x: ship?.position.x ?? 0,
+                                  y: (ship?.position.y ?? 0) + 15)
         bullet.name = "bullet"
         
         // Add 'B' label on top
